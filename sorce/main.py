@@ -1,9 +1,16 @@
-from pico2d import open_canvas, delay, close_canvas
-import game_framework
+from pico2d import close_canvas, open_canvas
 
+import game_framework
 import play_mode as start_mode
 
-open_canvas(1600, 600)
-game_framework.run(start_mode)
-close_canvas()
 
+def main():
+    open_canvas(1600, 900)
+    try:
+        game_framework.run(start_mode)
+    finally:
+        close_canvas()
+
+
+if __name__ == "__main__":
+    main()

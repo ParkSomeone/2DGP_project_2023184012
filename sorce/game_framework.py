@@ -1,6 +1,11 @@
 import time
+
+
 running = False
 stack = []
+frame_time = 0.0
+simulation_scale = 1.0
+frame_duration = 1.0 / 60.0
 
 
 def change_mode(mode):
@@ -31,27 +36,30 @@ def quit():
     running = False
 
 
-frame_time=0.0
-
 def run(start_mode):
-    global running, stack
+    global running, stack, frame_time, simulation_scale
     running = True
     stack = [start_mode]
-    global frame_time
-    frame_time=0.0
-    current_time=time.time()
+    frame_time = 0.0
+    simulation_scale = 1.0
+    previous_time = time.perf_counter()
     try:
         start_mode.init()
-        while running:
-#            time.sleep(0.1)    #낮은성능의 컴퓨터로 시뮬레이션
+        while running and stack:
+            current_time = time.perf_counter()
+            frame_time = max(0.0, current_time - previous_time)
+            previous_time = current_time
             stack[-1].handle_events()
-            stack[-1].update()
-            stack[-1].render()
-            frame_time=time.time()-current_time
-            frame_rate=1.0/frame_time
-            current_time+=frame_time
-#            print(f'Frame Time: {frame_time}, Frame Rate: {frame_rate}')   #프레임 출력
+            if running and stack:
+                stack[-1].update()
+                stack[-1].render()
+            remaining_frame_time = frame_duration - (
+                time.perf_counter() - current_time
+            )
+            if remaining_frame_time > 0:
+                time.sleep(remaining_frame_time)
     finally:
         while stack:
             stack.pop().finish()
         running = False
+        simulation_scale = 1.0
